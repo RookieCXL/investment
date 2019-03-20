@@ -1,6 +1,8 @@
 function [ label ] =judge_ma_rule1(t, price,days_average,down_length, horizontal_length,scale,scale0)
 %UNTITLED7 此处显示有关此函数的摘要
-%   按照规则1进行判断是不是买入点
+%   按照规则1进行判断t时刻是不是买入点
+%对时刻t之前的连续小于horizontal_length时刻，基本保持水平（日涨幅小于scale），
+%之前多于down_length以上的时刻，日涨幅大于scale0，并且t时刻股价大于均价，t-1时刻，股价小于均价时，认为t时刻买进
 label=0;%初始标记信号不明确
 cout_down=0;
 cout_horizontal=0;

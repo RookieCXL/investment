@@ -1,6 +1,7 @@
 function [ label ] =judge_ma_rule7(t, price,days_average,down_length,up_length)
 %UNTITLED7 此处显示有关此函数的摘要
-%   按照规则1进行判断是不是买入点
+%   按照规则7进行判断是不是卖出
+%股价经历连续连续涨之后连续下跌，并且最高值点股价小于均价，认为t时刻卖出
 label=0;%初始标记信号不明确
 cout_down=0;
 cout_up=0;

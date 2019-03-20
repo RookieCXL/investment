@@ -4,21 +4,21 @@ function [ label,label_type] =  judge_invest_dot_with_ma(t,label0,days, price,da
 label=0;
 label1=judge_ma_rule1(t, price,days_average,2,3,0.0005,0.00094);
 label2=judge_ma_rule2(t, price,days_average,3,20,0.04);
-label3=judge_ma_rule3(t, price,days_average,2,0.09);
+label3=judge_ma_rule3(t, price,days_average,3,0.07);
 label4=judge_ma_rule4(t, price,days_average,3,0.015);
 label5=judge_ma_rule5(t, price,days_average,3,6,0.0005,0.0025);
 label6=judge_ma_rule6(t, price,days_average,3,3);
 label7=judge_ma_rule7(t, price,days_average,4,5);
-label8=judge_ma_rule8(t, price,days_average,5,0.02,0.08);
+label8=judge_ma_rule8(t, price,days_average,5,0.015,0.05);
 if(label1||label2||label3||label4)
     label=1;
 end
 if((label5==-1)||(label6==-1)||(label7==-1)||(label8==-1))
     label=-1;
 end
-if (price(t)/days_average(t)>1.05)%股价偏离均线程度过大时，不进行操作
+if (price(t)/days_average(t)>1.1)%股价偏离均线程度过大时，不进行操作
     label=0;
-elseif(price(t)/days_average(t)<0.95)%股价偏离均线程度过大时，不进行操作
+elseif(price(t)/days_average(t)<0.9)%股价偏离均线程度过大时，不进行操作
     label=-0;
 end
 if (label==1||label==-1)

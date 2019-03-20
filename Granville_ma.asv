@@ -1,0 +1,198 @@
+%% zz500数据放环境下，直接运行，根据格兰维尔法则判别买入卖出点
+format short g；
+format bank
+%zz500 = csvread('zz500.csv',3,0);
+zz500 = csvread('D:\Quantitative investment data\data2.csv',2,0);
+
+days=zz500(:,1);
+price=zz500(:,3);
+%price=zz500(:,5);
+day_length=length(days);
+days_average=zeros(day_length,1);
+
+for i=20:day_length
+    days_average(i)=(twenty_days_avg(price(i-19:i))); %计算二十日均线
+end
+label=zeros(1,day_length);
+for i=20:day_length
+    [label(i),label_type(i,:)]=judge_invest_dot_with_ma(i,label,days,price(1:i),days_average(1:i));%判断是否是买入点，卖出点
+end
+%%  绘图
+figure(1)
+subplot(2,1,1)
+hold on;
+grid on;
+line1=plot(days(20:day_length),price(20:day_length));
+line2=plot(days(20:day_length),days_average(20:day_length),'k--');
+for i=1:day_length
+    if(label(i)==1)
+        dot1=plot(days(i),price(i),'r*');
+    elseif(label(i)==-1)
+        dot2=plot(days(i),price(i),'g*');
+    end
+end
+legend([line1,line2,dot1,dot2],'Close price','Twenty-days-average','Buying point','Sell point');
+
+%% 进行回测
+money=10000000;
+hold_p=0;
+for i=1:day_length
+    money_time(i)=money+hold_p*price(i)*100;
+    if(label(i)==0)
+        continue
+    elseif(label(i)==1)
+        tmp=(money-mod(money,price(i)*100))/(price(i)*100);
+        tmp=(tmp-mod(tmp,3))/3;
+        if(tmp~=0)
+            disp('买入手数，价位');
+            tmp,price(i)
+        end
+        hold_p=hold_p+tmp;
+        money=money-tmp*price(i)*100;
+    elseif(label(i)==-1)
+        tmp=(hold_p-mod(hold_p,3))/3;
+        money=money+tmp*price(i)*100;
+        if(hold_p~=0)
+            disp('卖出手数,价位');
+            tmp,price(i)
+        end
+        hold_p=hold_p-tmp;
+    end
+end
+
+%% 输出回测指标
+disp('最终资产')
+money+hold_p*price(day_length)*100
+subplot(2,1,2);
+plot(days(20:day_length),money_time(20:day_length));
+legend('ASSET');
+grid on;
+cout=0;
+for i=1:day_length
+      if(money_time(i)>(max(money_time(1:i-1))))
+            cout=cout+1;
+        end
+    for j=i+1:day_length
+        draw_down(i,j)=(money_time(i)-money_time(j))/money_time(i);
+    end
+end
+disp('期间盈利率：')
+rate=(money+hold_p*price(day_length)*100-10000000)/10000000
+disp('最大回撤')
+max(max(draw_down))
+disp('年化收益率')
+format long
+exp(365*log(1+rate)/(days(day_length)-days(1)))-1
+disp('累创新高天数')
+cout
+profit=money_time-10000000;
+profit_rate=profit/10000000;
+disp('夏普比')
+(rate)/(std(profit_rate))
+%% 表明每个信号点所属规则
+figure(2)
+subplot(2,2,1);
+hold on;
+grid on;
+line1=plot(days(20:day_length),price(20:day_length));%作每日收盘价图像
+line2=plot(days(20:day_length),days_average(20:day_length),'k--');%作二十日均线图像
+money_time=zeros(day_length,1);
+for i=1:day_length %根据信号点，标出买入点卖出点
+    if(label_type(i,1)==1)
+        dot_1=plot(days(i),price(i),'r*');
+    end
+end
+legend([line1,line2,dot_1],'Close price','Twenty-days-average','Buying rule1');
+
+subplot(2,2,2);
+hold on;
+grid on;
+line1=plot(days(20:day_length),price(20:day_length));%作每日收盘价图像
+line2=plot(days(20:day_length),days_average(20:day_length),'k--');%作二十日均线图像
+money_time=zeros(day_length,1);
+for i=1:day_length %根据信号点，标出买入点卖出点
+    if(label_type(i,2)==1)
+        dot_1=plot(days(i),price(i),'r*');
+    end
+end
+legend([line1,line2,dot_1],'Close price','Twenty-days-average','Buying rule2');
+
+subplot(2,2,3);
+hold on;
+grid on;
+line1=plot(days(20:day_length),price(20:day_length));%作每日收盘价图像
+line2=plot(days(20:day_length),days_average(20:day_length),'k--');%作二十日均线图像
+money_time=zeros(day_length,1);
+for i=1:day_length %根据信号点，标出买入点卖出点
+    if(label_type(i,3)==1)
+        dot_1=plot(days(i),price(i),'r*');
+    end
+end
+legend([line1,line2,dot_1],'Close price','Twenty-days-average','Buying rule3');
+
+subplot(2,2,4);
+hold on;
+grid on;
+line1=plot(days(20:day_length),price(20:day_length));%作每日收盘价图像
+line2=plot(days(20:day_length),days_average(20:day_length),'k--');%作二十日均线图像
+money_time=zeros(day_length,1);
+for i=1:day_length %根据信号点，标出买入点卖出点
+    if(label_type(i,4)==1)
+        dot_1=plot(days(i),price(i),'r*');
+    end
+end
+legend([line1,line2,dot_1],'Close price','Twenty-days-average','Buying rule4');
+
+figure(3)
+subplot(2,2,1);
+hold on;
+grid on;
+line1=plot(days(20:day_length),price(20:day_length));%作每日收盘价图像
+line2=plot(days(20:day_length),days_average(20:day_length),'k--');%作二十日均线图像
+money_time=zeros(day_length,1);
+for i=1:day_length %根据信号点，标出买入点卖出点
+    if(label_type(i,5)==-1)
+        dot_2=plot(days(i),price(i),'g*');
+    end
+end
+legend([line1,line2,dot_2],'Close price','Twenty-days-average','Sell rule1');
+
+subplot(2,2,2);
+hold on;
+grid on;
+line1=plot(days(20:day_length),price(20:day_length));%作每日收盘价图像
+line2=plot(days(20:day_length),days_average(20:day_length),'k--');%作二十日均线图像
+money_time=zeros(day_length,1);
+for i=1:day_length %根据信号点，标出买入点卖出点
+    if(label_type(i,6)==-1)
+        dot_2=plot(days(i),price(i),'g*');
+    end
+end
+legend([line1,line2,dot_2],'Close price','Twenty-days-average','Sell rule2');
+
+subplot(2,2,3);
+hold on;
+grid on;
+line1=plot(days(20:day_length),price(20:day_length));%作每日收盘价图像
+line2=plot(days(20:day_length),days_average(20:day_length),'k--');%作二十日均线图像
+money_time=zeros(day_length,1);
+for i=1:day_length %根据信号点，标出买入点卖出点
+    if(label_type(i,7)==-1)
+        dot_2=plot(days(i),price(i),'g*');
+    end
+end
+legend([line1,line2,dot_2],'Close price','Twenty-days-average','Sell rule3');
+
+subplot(2,2,4);
+hold on;
+grid on;
+line1=plot(days(20:day_length),price(20:day_length));%作每日收盘价图像
+line2=plot(days(20:day_length),days_average(20:day_length),'k--');%作二十日均线图像
+money_time=zeros(day_length,1);
+for i=1:day_length %根据信号点，标出买入点卖出点
+    if(label_type(i,8)==-1)
+        dot_2=plot(days(i),price(i),'g*');
+    end
+end
+legend([line1,line2,dot_2],'Close price','Twenty-days-average','Sell rule4');
+
